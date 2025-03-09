@@ -1,4 +1,5 @@
 export const BASE_URL = "";
+export const WALLET_URL = "/api/flutterwave";
 export const USERTASKS_URL = "/api/user-tasks";
 export const APPLICATION_URL = "/api/application_forms";
 export const BOOKING_URL = "/api/bookings";
@@ -8,4 +9,3 @@ export const ADMINCARDS_URL = "/api/admin/allcards";
 export const USERCARDS_URL = "/api/usercards";
 export const SERVICES_URL = "/api/services";
 export const CREATESERVICES_URL = "/api/CreateService";
-export const WALLET_URL = "/api/flutterwave";
