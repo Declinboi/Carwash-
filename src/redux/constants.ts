@@ -1,0 +1,13 @@
+export const BASE_URL = "";
+// export const USERS_URL = "/api/Users";
+export const APPLICATION_URL = "/api/application_forms"
+export const BOOKING_URL = "/api/bookings" 
+export const WORKER_URL = "/api/workers" 
+export const CARDS_URL =   "/api/cards"
+export const ADMINCARDS_URL =   "/api/admin/allcards"
+export const USERCARDS_URL =   "/api/usercards"
+export const SERVICES_URL = "/api/services"
+export const CREATESERVICES_URL = "/api/CreateService"
+export const USERTASKS_URL = "/api/user-tasks"
+export const AUTHENCATION_URL = "/api"
+export const WALLET_URL = "/api/flutterwave"
