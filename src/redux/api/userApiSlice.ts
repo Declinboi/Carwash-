@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-// import { USERS_URL } from "../constants";
+
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -104,12 +104,17 @@ export const userApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetAllUsersQuery,
+  useRegisterMutation,
   useLoginMutation,
   useLogoutMutation,
-  useRegisterMutation,
-  // useProfileMutation,
-  // useGetUsersQuery,
+  useLogoutAllDeviceMutation,
   useDeleteUserMutation,
-  // useUpdateUserMutation,
-  // useGetUserDetailsQuery,
+  useUpdateUserDetailsMutation,
+  useResetPasswordMutation,
+  useForgotPasswordMutation,
+  useCreateWasherMutation,
+  useCreateAdminMutation,
+  useShowUserDetailsQuery,
+  useEditUserDetailsQuery,
 } = userApiSlice;
