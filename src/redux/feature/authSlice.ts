@@ -1,8 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const getUserInfo = () => {
+  if (typeof window === "undefined") return null;
+
   try {
-    return JSON.parse(localStorage.getItem("userInfo") || "null");
+    const data = localStorage.getItem("userInfo");
+    const expirationTime = localStorage.getItem("expirationTime");
+
+    if (data && expirationTime) {
+      const now = new Date().getTime();
+      if (now > parseInt(expirationTime, 10)) {
+        console.warn("User session expired. Clearing storage.");
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("expirationTime");
+        return null;
+      }
+      return JSON.parse(data);
+    }
+
+    return null;
   } catch (error) {
     console.error("Error parsing userInfo from localStorage:", error);
     return null;
@@ -19,15 +35,18 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action) => {
       state.userInfo = action.payload;
-      localStorage.setItem("userInfo", JSON.stringify(action.payload));
-
-      const expirationTime = new Date().getTime() + 30 * 24 * 60 * 60 * 1000; // 30 days
-      localStorage.setItem("expirationTime", expirationTime.toString());
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userInfo", JSON.stringify(action.payload));
+        const expirationTime = new Date().getTime() + 30 * 24 * 60 * 60 * 1000; // 30 days
+        localStorage.setItem("expirationTime", expirationTime.toString());
+      }
     },
     logout: (state) => {
       state.userInfo = null;
-      localStorage.removeItem("userInfo");
-      localStorage.removeItem("expirationTime");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("expirationTime");
+      }
     },
   },
 });

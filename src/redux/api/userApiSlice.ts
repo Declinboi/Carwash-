@@ -5,7 +5,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: () => ({
-        url: "/api/Users",
+        url: "/api/proxy/Users",
       }),
       providesTags: ["User"],
       keepUnusedDataFor: 5,
@@ -47,6 +47,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `/api/delete/${userId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["User"],
     }),
 
     showUserDetails: builder.query({

@@ -19,11 +19,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/:path*",  // Redirects all API calls
-        destination: "https://api.platonicwash.com/:path*", // API server
+        source: "/api/:path*",  // Redirects all API calls
+        destination: "https://api.platonicwash.com/api/:path*", // API server
       },
     ];
   },
 };
 
 export default nextConfig;
+
+
+
+
+
