@@ -9,24 +9,90 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from '@/hooks/use-toast'
+import { BASE_URL } from '@/redux/constants'
+import axios from 'axios'
 
 
 export default function AddAdminPage() {
+
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('')
-   const {toast} = useToast()
-  const handleSubmit = (e: React.FormEvent) => {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send this data to your backend
-    console.log({ name, email, role })
-    toast({
-      title: "Admin added",
-      description: `${name} has been added as a new admin.`,
-    })
-    router.push('/dashboard/admins')
+
+    if (!role) {
+      toast({
+        title: "Error",
+        description: "Please select a role.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/create`,
+        { email, name, role },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // withCredentials: true, // If authentication is required
+        }
+      )
+
+      console.log("API Response:", response.data)
+      toast({
+        title: "Admin added",
+        description: `${name} has been added as a new admin.`,
+      })
+      router.push('/dashboard/admins')
+    } catch (error: any) {
+      console.error("Error adding admin:", error)
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to add admin.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
+
+
+  // const router = useRouter()
+  // const [name, setName] = useState('')
+  // const [email, setEmail] = useState('')
+  // const [role, setRole] = useState('')
+  //  const {toast} = useToast()
+
+
+  // const handleSubmit = async(e: React.FormEvent) => {
+  //   e.preventDefault()
+  //   // Here you would typically send this data to your backend
+  //   const response = await axios.post(
+  //     `${BASE_URL}/api/create`,
+  //     { email,name, role },
+  //     {
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       }
+  //     }
+  //   )
+
+  //   console.log({ name, email, role })
+  //   toast({
+  //     title: "Admin added",
+  //     description: `${name} has been added as a new admin.`,
+  //   })
+  //   router.push('/dashboard/admins')
+  // }
 
   return (
     <div className="container mx-auto py-10">
@@ -64,8 +130,8 @@ export default function AddAdminPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button type="submit" className="bg-orange-500 hover:bg-orange-600">
-          <UserPlus className="mr-2 h-4 w-4" /> Add Admin
+        <Button type="submit" className="bg-orange-500 hover:bg-orange-600" disabled={loading} >
+        {loading ? "Adding..." : <><UserPlus className="mr-2 h-4 w-4" /> Add Admin</>}
         </Button>
       </form>
     </div>

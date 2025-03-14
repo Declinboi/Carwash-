@@ -1,57 +1,98 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
-import axios from 'axios'
-import Cookies from 'js-cookie'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { EyeIcon, EyeOffIcon } from 'lucide-react'
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { BASE_URL } from "@/redux/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router";
+import { useLoginMutation } from "@/redux/api/userApiSlice";
+import { RootState } from "@/redux/store";
+import { setCredentials } from "@/redux/feature/authSlice";
+import { toast } from "@/hooks/use-toast";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword)
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}login`,
-        { email, password },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
+  const [login, { isLoading }] = useLoginMutation();
 
-      // Assuming response.data has the following structure:
-      // {
-      //   "user": { ... },
-      //   "role": "user",
-      //   "token": "your_jwt_token"
-      // }
-      const { token } = response.data
+  const dispatch = useDispatch();
+  const router = useRouter();
 
-      // Store the token in a cookie (expires in 1 day, Secure and SameSite options added)
-      Cookies.set('auth_token', token, { expires: 1, secure: true, sameSite: 'strict' })
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
-      console.log('Login successful. Token stored in cookie:', token)
-      // Redirect to a protected route (e.g., dashboard)
-      window.location.href = '/dashboard'
-    } catch (err: any) {
-      console.error('Login error:', err)
-      setError('Login failed. Please check your credentials and try again.')
+  const searchParams = useSearchParams(); 
+  const redirect = searchParams.get("redirect") || "/dashboard"; 
+
+  useEffect(() => {
+    if (userInfo) {
+      router.push (redirect);
     }
-  }
+  }, [router, redirect, userInfo]);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const res = await login({ email, password }).unwrap();
+      console.log(res);
+      dispatch(setCredentials(res)); // No need to spread `res`
+      router.push(redirect);
+    } catch (error: any) {
+      setError("Login failed. Please check your credentials and try again.");
+    }
+
+    // const handleLogin = async (e: React.FormEvent) => {
+    //   e.preventDefault()
+    //   setError(null)
+    //   try {
+    //     const response = await axios.post(
+    //       `${BASE_URL}/api/login`,
+    //       { email, password },
+    //       {
+    //         headers: {
+    //           'Content-Type': 'application/json'
+    //         }
+    //       }
+    //     )
+
+    //     // Assuming response.data has the following structure:
+    //     // {
+    //     //   "user": { ... },
+    //     //   "role": "user",
+    //     //   "token": "your_jwt_token"
+    //     // }
+    //     const { token } = response.data
+
+    //     // Store the token in a cookie (expires in 1 day, Secure and SameSite options added)
+    //     Cookies.set('auth_token', token, { expires: 1, secure: true, sameSite: 'strict' })
+
+    //     console.log('Login successful. Token stored in cookie:', token)
+    //     // Redirect to a protected route (e.g., dashboard)
+    //     window.location.href = '/dashboard'
+    //   } catch (err: any) {
+    //     console.error('Login error:', err)
+    //     setError('Login failed. Please check your credentials and try again.')
+    //   }
+  };
 
   return (
     <div className="min-h-screen bg-orange-50 flex flex-col lg:flex-row">
@@ -76,7 +117,9 @@ export default function LoginPage() {
         </div>
         {/* Text overlay */}
         <div className="lg:absolute hidden inset-0 items-center justify-center z-20">
-          <h1 className="text-4xl font-bold text-white text-center px-4">Welcome to MobileWash</h1>
+          <h1 className="text-4xl font-bold text-white text-center px-4">
+            Welcome to MobileWash
+          </h1>
         </div>
       </div>
 
@@ -84,18 +127,20 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-orange-950">Log In</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-orange-950">
+              Log In
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin}>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    required 
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -103,11 +148,11 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="password" 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="Enter your password" 
-                      required 
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -136,20 +181,30 @@ export default function LoginPage() {
                       Remember me
                     </Label>
                   </div>
-                  <Link href="/forgot-password" className="text-sm text-orange-600 hover:underline">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-orange-600 hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white mt-4">
-                Log in
+              <Button
+                type="submit"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white mt-4"
+                disabled={isLoading}
+              >
+               {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <p className="text-sm text-center text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-orange-600 hover:underline">
+              Don&apos;t have an account?{" "}
+              <Link
+                href={redirect ? `/register?redirect=${redirect}` : "/register"}
+                className="text-orange-600 hover:underline"
+              >
                 Sign up
               </Link>
             </p>
@@ -157,5 +212,5 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

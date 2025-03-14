@@ -1,12 +1,13 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import axios from "axios";
+import { BASE_URL } from "@/redux/constants";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL, // e.g., "https://investment-api-oobo.onrender.com/api/v1"
-  withCredentials: true,
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 

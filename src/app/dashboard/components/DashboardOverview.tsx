@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarIcon, Car, DollarSign, Users, PlusCircle, ClipboardList, Settings } from 'lucide-react'
 import { format } from 'date-fns'
@@ -29,6 +29,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import axios from 'axios'
+import { BASE_URL } from '@/redux/constants'
+import { RootState } from '@/redux/store'
+import { useDispatch, useSelector } from 'react-redux'
+import { useLogoutMutation } from '@/redux/api/userApiSlice'
+import { logout } from '@/redux/feature/authSlice'
 
 // Mock data
 const clientName = "John"
@@ -44,12 +50,30 @@ const recentBookings = [
 ]
 
 export default function DashboardOverview() {
-  const router = useRouter()
+  
   const [date, setDate] = useState<Date | undefined>(new Date())
+  // const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null)
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+  
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  // const [logoutApiCall] = useLogoutMutation();
+
+  // const logoutHandler = async () => {
+  //   try {
+  //     await logoutApiCall().unwrap();
+  //     dispatch(logout());
+  //     router.push("/login");
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
 
   return (
     <div className="container mx-auto ">
-      <h1 className="text-2xl font-bold  mb-6">Welcome back, {clientName}</h1>
+      <h1 className="text-2xl font-bold  mb-6">Welcome back, {userInfo?.name || "Guest"} </h1>
       
       {/* Key Statistics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">

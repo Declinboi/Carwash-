@@ -1,4 +1,4 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || "https://api.platonicwash.com";
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.platonicwash.com";//?.replace(/\/$/, '')
 export const WALLET_URL = "/api/flutterwave";
 export const USERTASKS_URL = "/api/user-tasks";
 export const APPLICATION_URL = "/api/application_forms";

@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from 'react';
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from "react";
+import {
+  BadgeCheck,
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  LogOut,
+  Sparkles,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,8 +36,12 @@ import {
 import { useCartStore } from "@/lib/store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import axios from "axios";
+import Cookies from "js-cookie";
+import { logout } from "@/redux/feature/authSlice";
+import { useLogoutMutation } from "@/redux/api/userApiSlice";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 
 export function NavUser({
   user,
@@ -41,8 +56,12 @@ export function NavUser({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { items, addItem, removeItem, updateQuantity } = useCartStore();
   const totalItems = items?.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = items?.reduce((sum, item) => 
-    sum + (parseInt(item?.service?.price[item.carType].replace(',', '')) * item.quantity), 0
+  const totalAmount = items?.reduce(
+    (sum, item) =>
+      sum +
+      parseInt(item?.service?.price[item.carType].replace(",", "")) *
+        item.quantity,
+    0
   );
 
   const dropdownVariants = {
@@ -50,15 +69,19 @@ export function NavUser({
     visible: { opacity: 1, y: 0 },
   };
 
-  const handleIncrement = (serviceId: string, carType: 'saloon' | 'suv') => {
-    const item = items.find(item => item.service.id === serviceId && item.carType === carType);
+  const handleIncrement = (serviceId: string, carType: "saloon" | "suv") => {
+    const item = items.find(
+      (item) => item.service.id === serviceId && item.carType === carType
+    );
     if (item) {
       updateQuantity(serviceId, carType, item.quantity + 1);
     }
   };
 
-  const handleDecrement = (serviceId: string, carType: 'saloon' | 'suv') => {
-    const item = items.find(item => item.service.id === serviceId && item.carType === carType);
+  const handleDecrement = (serviceId: string, carType: "saloon" | "suv") => {
+    const item = items.find(
+      (item) => item.service.id === serviceId && item.carType === carType
+    );
     if (item && item.quantity > 1) {
       updateQuantity(serviceId, carType, item.quantity - 1);
     } else if (item && item.quantity === 1) {
@@ -66,22 +89,36 @@ export function NavUser({
     }
   };
 
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const [logoutApiCall] = useLogoutMutation();
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}logout`, null, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      await logoutApiCall().unwrap();
+      dispatch(logout());
+      router.push("/login");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error(error);
     }
-    // Remove the token from cookies
-    Cookies.remove('auth_token');
-    // Redirect to login page or home
-    window.location.href = '/login';
   };
+
+  // const handleLogout = async () => {
+  //   try {
+  //     await axios.post(`${process.env.NEXT_PUBLIC_API_URL}logout`, null, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error('Logout error:', error);
+  //   }
+  //   // Remove the token from cookies
+  //   Cookies.remove('auth_token');
+  //   // Redirect to login page or home
+  //   window.location.href = '/login';
+  // };
 
   return (
     <SidebarMenu>
@@ -116,17 +153,32 @@ export function NavUser({
                     <DropdownMenuLabel>Cart Preview</DropdownMenuLabel>
                     <ScrollArea className="h-[300px]">
                       {items.map((item) => (
-                        <DropdownMenuItem key={`${item.service.id}-${item.carType}`} className="flex-col items-start">
+                        <DropdownMenuItem
+                          key={`${item.service.id}-${item.carType}`}
+                          className="flex-col items-start"
+                        >
                           <div className="flex justify-between w-full">
-                            <span>{item.service.name} ({item.carType})</span>
-                            <span>₦{parseInt(item.service.price[item.carType].replace(',', '')) * item.quantity}</span>
+                            <span>
+                              {item.service.name} ({item.carType})
+                            </span>
+                            <span>
+                              ₦
+                              {parseInt(
+                                item.service.price[item.carType].replace(
+                                  ",",
+                                  ""
+                                )
+                              ) * item.quantity}
+                            </span>
                           </div>
                           <div className="flex items-center mt-2">
                             <Button
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => handleDecrement(item.service.id, item.carType)}
+                              onClick={() =>
+                                handleDecrement(item.service.id, item.carType)
+                              }
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
@@ -135,7 +187,9 @@ export function NavUser({
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => handleIncrement(item.service.id, item.carType)}
+                              onClick={() =>
+                                handleIncrement(item.service.id, item.carType)
+                              }
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
@@ -143,7 +197,9 @@ export function NavUser({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 ml-2"
-                              onClick={() => removeItem(item.service.id, item.carType)}
+                              onClick={() =>
+                                removeItem(item.service.id, item.carType)
+                              }
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -161,7 +217,6 @@ export function NavUser({
                         <Link href="/dashboard/cart" passHref>
                           <Button className="w-full">View Cart</Button>
                         </Link>
-                    
                       </div>
                     </div>
                   </motion.div>
@@ -236,7 +291,7 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -245,4 +300,3 @@ export function NavUser({
     </SidebarMenu>
   );
 }
-

@@ -5,7 +5,8 @@ export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: () => ({
-        url: "/api/proxy/Users",
+        url: "/api/Users",
+        method:"GET",
       }),
       providesTags: ["User"],
       keepUnusedDataFor: 5,
@@ -15,14 +16,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: "/api/register",
         method: "POST",
-        body: data,
+        data,
       }),
     }),
     createAdmin: builder.mutation({
       query: (data) => ({
         url: "/api/create",
         method: "POST",
-        body: data,
+         data,
       }),
     }),
 
@@ -30,7 +31,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: "/api/createwasher",
         method: "POST",
-        body: data,
+        data,
       }),
     }),
 
@@ -38,7 +39,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: "/api/login",
         method: "POST",
-        body: data,
+         data,
       }),
     }),
 
@@ -53,6 +54,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     showUserDetails: builder.query({
       query: (id) => ({
         url: `/api/show/${id}`,
+        method:"GET",
       }),
       keepUnusedDataFor: 5,
     }),
@@ -60,6 +62,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     editUserDetails: builder.query({
       query: (id) => ({
         url: `/api/edit/${id}`,
+        method:"GET",
       }),
       keepUnusedDataFor: 5,
     }),
@@ -68,14 +71,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: `/api/update/${data.userId}`,
         method: "PUT",
-        body: data,
+         data,
       }),
       invalidatesTags: ["User"],
     }),
 
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: "api/logout",
+        url: "/api/logout",
         method: "POST",
       }),
     }),
@@ -84,7 +87,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: "/api/forgot-password",
         method: "POST",
-        body: data,
+        data,
       }),
     }),
 
@@ -92,12 +95,12 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: "/api/reset-password",
         method: "POST",
-        body: data,
+         data,
       }),
     }),
     logoutAllDevice: builder.mutation<void, void>({
       query: () => ({
-        url: "api/logout-all",
+        url: "/api/logout-all",
         method: "POST",
       }),
     }),

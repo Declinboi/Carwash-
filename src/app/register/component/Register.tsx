@@ -13,20 +13,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-
+import { BASE_URL } from "@/redux/constants";
 import { useRouter } from "next/navigation";
-import { useRegisterMutation } from "@/redux/api/userApiSlice";
-import { setCredentials } from "@/redux/feature/authSlice";
-import { useDispatch } from "react-redux";
+import axios from "axios";
+import axiosInstance from "@/lib/utils";
 
-// Create an Axios instance with a default base URL
+// import { useRegisterMutation } from "@/redux/api/userApiSlice";
+// import { setCredentials } from "@/redux/feature/authSlice";
+// import { useDispatch } from "react-redux";
 
 export default function RegisterPage() {
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const { toast } = useToast();
-
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,33 +34,24 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  const [register, { isLoading }] = useRegisterMutation(); // Redux mutation hook
-
+  const { toast } = useToast();
+  const router = useRouter();
   // Handle text input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle select changes (for dropdowns like gender)
+  // Handle select change
   const handleSelectChange = (name: string) => (value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
+  // Handle form submission and send registration data using the Axios instance
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ensure passwords match
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match.",
-      });
-      return;
-    }
-
-    // Prepare API payload
+    // Map confirmPassword to password_confirmation for the API.
     const payload = {
       name: formData.name,
       email: formData.email,
@@ -73,94 +60,28 @@ export default function RegisterPage() {
       address: formData.address,
       gender: formData.gender,
       password: formData.password,
-      password_confirmation: formData.confirmPassword,
+      password_confirmation: formData.password,
     };
 
     try {
-      const response = await register(payload).unwrap();
-      console.log("Registration response:", response);
+      const response = await axiosInstance.post("/api/register", payload);
 
-      // Store user data in Redux state
-      dispatch(setCredentials(response));
-
-      // Show success message
+      console.log("Registration response:", response.data);
       toast({
         title: "Registration Successful",
         description: "Your account has been created successfully.",
       });
-
-      // Redirect user after successful registration
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Registration error:", error);
-
-      // Display API error message if available
+      console.error("Registration error:", error.response?.data);
       toast({
         title: "Registration Failed",
         description:
-          error?.data?.message ||
+          error.response?.data?.message ||
           "Something went wrong while creating your account.",
       });
     }
   };
-
-  // const [formData, setFormData] = useState({
-  //   name: '',
-  //   email: '',
-  //   country: '',
-  //   city: '',
-  //   address: '',
-  //   gender: '',
-  //   password: '',
-  //   confirmPassword: '',
-  // })
-
-  // const { toast } = useToast()
-  //  const router = useRouter()
-  // // Handle text input changes
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target
-  //   setFormData(prev => ({ ...prev, [name]: value }))
-  // }
-
-  // // Handle select change
-  // const handleSelectChange = (name: string) => (value: string) => {
-  //   setFormData(prev => ({ ...prev, [name]: value }))
-  // }
-
-  // // Handle form submission and send registration data using the Axios instance
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault()
-
-  //   // Map confirmPassword to password_confirmation for the API.
-  //   const payload = {
-  //     name: formData.name,
-  //     email: formData.email,
-  //     country: formData.country,
-  //     city: formData.city,
-  //     address: formData.address,
-  //     gender: formData.gender,
-  //     password: formData.password,
-  //     password_confirmation: formData.confirmPassword,
-  //   }
-
-  //   try {
-  //     const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}register`, payload)
-  //     console.log('Registration response:', response.data)
-  //     toast({
-  //       title: "Registration Successful",
-  //       description: "Your account has been created successfully.",
-  //     })
-  //    router.push("/dashboard")
-
-  //   } catch (error: any) {
-  //     console.error('Registration error:', error)
-  //     toast({
-  //       title: "Registration Failed",
-  //       description: error.response?.data?.message || "Something went wrong while creating your account.",
-  //     })
-  //   }
-  // }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -271,12 +192,98 @@ export default function RegisterPage() {
           <Button
             type="submit"
             className="w-full bg-primary !py-4 text-white"
-            disabled={isLoading}
+            // disabled={isLoading}
           >
-            {isLoading ? "Registering..." : "Register"}
+            Register
           </Button>
         </form>
       </div>
     </div>
   );
 }
+
+// const dispatch = useDispatch();
+// const router = useRouter();
+// const { toast } = useToast();
+
+// // Form state
+// const [formData, setFormData] = useState({
+//   name: "",
+//   email: "",
+//   country: "",
+//   city: "",
+//   address: "",
+//   gender: "",
+//   password: "",
+//   confirmPassword: "",
+// });
+
+// const [register, { isLoading }] = useRegisterMutation(); // Redux mutation hook
+
+// // Handle text input changes
+// const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//   const { name, value } = e.target;
+//   setFormData((prev) => ({ ...prev, [name]: value }));
+// };
+
+// // Handle select changes (for dropdowns like gender)
+// const handleSelectChange = (name: string) => (value: string) => {
+//   setFormData((prev) => ({ ...prev, [name]: value }));
+// };
+
+// // Handle form submission
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   // Ensure passwords match
+//   if (formData.password !== formData.confirmPassword) {
+//     toast({
+//       title: "Error",
+//       description: "Passwords do not match.",
+//     });
+//     return;
+//   }
+
+//   // Prepare API payload
+//   const payload = {
+//     name: formData.name,
+//     email: formData.email,
+//     country: formData.country,
+//     city: formData.city,
+//     address: formData.address,
+//     gender: formData.gender,
+//     password: formData.password,
+//     password_confirmation: formData.confirmPassword,
+//   };
+
+//   try {
+//     const response = await register(payload).unwrap();
+//     console.log("Registration response:", response);
+
+//     // Store user data in Redux state
+//     dispatch(setCredentials(response));
+
+//     // Show success message
+//     toast({
+//       title: "Registration Successful",
+//       description: "Your account has been created successfully.",
+//     });
+
+//     // Redirect user after successful registration
+//     router.push("/dashboard");
+//   } catch (error: any) {
+//     console.error("Registration error:", error);
+
+//     // Extract meaningful error message
+//     const errorMessage =
+//       error?.data?.message ||
+//       error?.data?.error ||
+//       "Something went wrong while creating your account.";
+
+//     // Display API error message if available
+//     toast({
+//       title: "Registration Failed",
+//       description: errorMessage,
+//     });
+//   }
+// };
